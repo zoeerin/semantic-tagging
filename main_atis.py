@@ -18,11 +18,11 @@ parser.add_argument('--train', action='store_true', default=False)
 parser.add_argument('--test', action='store_true', default=False)
 parser.add_argument('--use_crf', action='store_true', default=False)
 parser.add_argument('--model', type=str, choices=['cnn', 'rnn'], default='rnn')
+parser.add_argument('--number_of_models', type=int, default=1)
 parser.add_argument('--save_path', type=str)	# 训练集
 parser.add_argument('--train_set', type=str, default='atis.train.txt')	# 训练集
 parser.add_argument('--test_set', type=str, default='atis.test.txt')	# 测试集
 parser.add_argument('--output', type=str)	# RNN输出的结果
-parser.add_argument('--output_crf', type=str)	# CRF输出的结果
 parser.add_argument('--batch_size', type=int, default=50)
 parser.add_argument('--log_every_n_batch', type=int, default=50)
 parser.add_argument('--max_step', type=int, default=1000, help='train RNN for this many steps')
@@ -46,68 +46,41 @@ def main():
     test_set = read_data_file(args.test_set)
     train_set = convert_data_to_id(train_set, name2id_tag, name2id_word)
     test_set = convert_data_to_id(test_set, name2id_tag, name2id_word)
+    models = []
     if args.model == 'rnn':
-        model = Sequence_Tag_RNN_Model(args.embedding_size, args.cell_size, num_words, num_tags)
+        for i in range(args.number_of_models):
+            model = Sequence_Tag_RNN_Model(args.embedding_size, args.cell_size, num_words, num_tags)
+            models.append(model)
     elif args.model == 'cnn':
-        model = Sequence_Tag_CNN_Model(args.embedding_size, args.n_channel, args.kernel, num_words, num_tags)
+        for i in range(args.number_of_models):
+            model = Sequence_Tag_CNN_Model(args.embedding_size, args.n_channel, args.kernel, num_words, num_tags)
+            models.append(model)
     else:
-        raise NotImplementedError('model should be one of: rnn,cnn')
-    _loss = 0
+        raise NotImplementedError
 
     # train a new model
     if args.train:
-        optimizer = torch.optim.Adam(model.parameters())
-        for i in range(args.max_step + 1):
-            words, tags, length = get_batch_randomly(train_set, args.batch_size)
-            words = Variable(torch.from_numpy(words)).long()
-            tags = Variable(torch.from_numpy(tags)).long()
-            output = model.forward(words=words,
-                                   length=length)
-            loss = F.cross_entropy(input=output.view(-1, num_tags),
-                                   target=tags.view(-1),
-                                   ignore_index=PAD_ID)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            _loss += loss.data[0]
-            if i != 0 and i % args.log_every_n_batch == 0:
-                print('Batch:', i, '\t', 'Average Loss:', _loss / args.log_every_n_batch)
-                _loss = 0
-        print('finished training [{}] model'.format(args.model))
-
-        with open(args.save_path, 'wb') as f:
-            torch.save(model.state_dict(), f)
-            print('saved parameters to {}'.format(args.save_path))
+        for i,model in enumerate(models):
+            train_nn_model(model, train_set, num_tags, i)
+            print('finished training {} model.'.format(i))
 
     # predict results using previously saved model
     if args.test:
-        model.load_state_dict(torch.load(args.save_path))
-        print('restored parameters from {}'.format(args.save_path))
-        test(model, test_set, args.output, id2name_word, id2name_tag)
+        for i,model in enumerate(models):
+            save_path = get_save_path(i)
+            model.load_state_dict(torch.load(save_path))
+            print('restored parameters from {}'.format(save_path))
+        test(models, test_set, args.output, id2name_word, id2name_tag)
         compute_atis_fscore(args.test_set, args.output)
 
     # train a CRF model based on the RNN model
     if args.use_crf:
-        model.load_state_dict(torch.load(args.save_path))
-        # 获取RNN的输出
-        logits_train, labels_train = get_logits(model, train_set, id2name_tag, num_tags)
-        logits_test, labels_test = get_logits(model, test_set, id2name_tag, num_tags)
+        train_crf_model(models, train_set, test_set, id2name_tag, num_tags)
+        compute_atis_fscore(args.test_set, args.output)
 
-        # 利用RNN的输出训练CRF
-        crf = sklearn_crfsuite.CRF(algorithm='lbfgs', c1=0.1, c2=0.1, max_iterations=args.crf_step)
-        crf.fit(logits_train, labels_train)
-        y_preds = crf.predict(logits_test)
 
-        # 将CRF结果写入文件
-        y_lines = [line.strip().split('\t')[0] for line in open(args.test_set, 'r').readlines()]
-        with open(args.output_crf, 'w') as f:
-            for y_line, y_pred in zip(y_lines, y_preds):
-                f.write(y_line + '\t' + ' '.join(y_pred) + '\n')
-        print('tested model, results saved to {}'.format(args.output_crf))
-
-    # compute_atis_fscore(args.test_set, args.output_crf)
-
+def get_save_path(model_id):
+    return args.save_path + '.' + str(model_id)
 
 def compute_atis_fscore(f_true, f_predict):
     true_labels = get_labels_from_output(f_true)
@@ -126,8 +99,8 @@ def get_labels_from_output(result_file):
         if '\t' not in line:
             print(i, line)
             continue
-        _labels = line.strip().split('\t')[1].split()
         _words = line.strip().split('\t')[0].split()
+        _labels = line.strip().split('\t')[1].split()
         labels.extend(_labels)
     return labels
 
@@ -158,28 +131,83 @@ def get_logits(model, dataset, id2name_tag, num_tags):
     return logits, labels
 
 
-def test(model, test_set, output_file, id2name_word, id2name_tag):
+def train_nn_model(model, train_set, num_tags, model_id):
+    save_path = args.save_path + '.' + str(model_id)
+    optimizer = torch.optim.Adam(model.parameters())
+    _loss = 0
+    for i in range(args.max_step + 1):
+        words, tags, length = get_batch_randomly(train_set, args.batch_size)
+        words = Variable(torch.from_numpy(words)).long()
+        tags = Variable(torch.from_numpy(tags)).long()
+        output = model.forward(words=words,
+                               length=length)
+        loss = F.cross_entropy(input=output.view(-1, num_tags),
+                               target=tags.view(-1),
+                               ignore_index=PAD_ID)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        _loss += loss.data[0]
+        if i != 0 and i % args.log_every_n_batch == 0:
+            print('Batch:', i, '\t', 'Average Loss:', _loss / args.log_every_n_batch)
+            _loss = 0
+
+    with open(save_path, 'wb') as f:
+        torch.save(model.state_dict(), f)
+    print('saved parameters to {}'.format(save_path))
+
+
+def train_crf_model(models, train_set, test_set, id2name_tag, num_tags):
+    # I don't how to ensemble CRF currently so assume there's only one model when using CRF
+    # crf.predict() just gives results, not the probabilities
+    model = models[0]
+    save_path = get_save_path(model_id=0)
+    model.load_state_dict(torch.load(save_path))
+    # 获取RNN的输出
+    logits_train, labels_train = get_logits(model, train_set, id2name_tag, num_tags)
+    logits_test, labels_test = get_logits(model, test_set, id2name_tag, num_tags)
+
+    # 利用RNN的输出训练CRF
+    crf = sklearn_crfsuite.CRF(algorithm='lbfgs', c1=0.1, c2=0.1, max_iterations=args.crf_step)
+    crf.fit(logits_train, labels_train)
+    y_preds = crf.predict(logits_test)
+
+    # 将CRF结果写入文件
+    y_lines = [line.strip().split('\t')[0] for line in open(args.test_set, 'r').readlines()]
+    with open(args.output, 'w') as f:
+        for y_line, y_pred in zip(y_lines, y_preds):
+            f.write(y_line + '\t' + ' '.join(y_pred) + '\n')
+    print('tested model, results saved to {}'.format(args.output))
+
+
+def test(models, test_set, output_file, id2name_word, id2name_tag):
+    if type(models) is not list:
+        models = [models]
     f = open(output_file, 'w')
     for batch in get_sample_sequentially(test_set):
         np_words, np_tags, np_length = batch
         words = Variable(torch.from_numpy(np_words)).long()
         #tags = Variable(torch.from_numpy(_tags)).long()
-        output = model.forward(words=words,
-                               length=np_length)
-        predicted_tags = output.max(-1)[1]
+        ensemble_output = 0
+        for model in models:
+            output = model.forward(words=words,
+                                   length=np_length)
+            ensemble_output += output
+        predicted_tags = ensemble_output.max(-1)[1]
         predicted_tags = predicted_tags
         predicted_tags = predicted_tags.data.numpy()
         predicted_tags = predicted_tags[0]
         np_words = np_words[0]
 
-        # 输出的文件格式也要改一下
         if  np_words.shape[0] != len(predicted_tags):
             print(np_length)
             print(np_words)
         out_words = ' '.join([id2name_word[w] for w in np_words])
         out_tags = ' '.join([id2name_tag[t] for t in predicted_tags])
         f.write(out_words + '\t' + out_tags + '\n')
-    print('tested [{}] model, results saved to {}'.format(args.model, output_file))
+    print('tested on {} model(s), results saved to {}'.format(
+        args.number_of_models, output_file))
 
 
 def get_vocab(data):
@@ -224,7 +252,7 @@ def read_data_file(data):
             words, tags = sp
             sentence = words.split()
             sentence_tag = tags.split()
-        dataset.append((sentence, sentence_tag, len(sentence)))
+            dataset.append((sentence, sentence_tag, len(sentence)))
     print('number of sentences: {}'.format(len(dataset)))
     return dataset
 
