@@ -1,0 +1,209 @@
+yogurt, greek, strawberry, nonfat
+category 	 yogurt
+milkfat 	 null
+sweetened 	 null
+name 	 yogurt
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 cranberry almond
+addon 	 null
+salt 	 null
+pack 	 null
+
+wheat flour, white (industrial), 13% protein, bleached, unenriched
+category 	 wheat flour
+milkfat 	 null
+sweetened 	 null
+name 	 cocoa krispies
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 italian
+addon 	 null
+salt 	 null
+pack 	 null
+
+waffles, gluten-free, frozen, ready-to-heat
+category 	 pretzels
+milkfat 	 null
+sweetened 	 null
+name 	 bologna light
+brand 	 null
+technique 	 frozen
+caffeine 	 null
+fat 	 null
+flavor 	 twix peanut butter
+addon 	 null
+salt 	 null
+pack 	 null
+
+turkey, whole, back, meat only, cooked, roasted
+category 	 turkey
+milkfat 	 null
+sweetened 	 null
+name 	 turkey
+brand 	 null
+technique 	 roasted
+caffeine 	 null
+fat 	 null
+flavor 	 scallop
+addon 	 null
+salt 	 null
+pack 	 null
+
+tomato powder
+category 	 pretzels
+milkfat 	 null
+sweetened 	 null
+name 	 grape juice
+brand 	 null
+technique 	 canned
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 unsalted
+pack 	 null
+
+sweet potato, canned, vacuum pack
+category 	 sweet potato
+milkfat 	 null
+sweetened 	 null
+name 	 sweet potato
+brand 	 null
+technique 	 canned
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 unsalted
+pack 	 null
+
+sugars, maple
+category 	 premium crispy chicken club sandwich
+milkfat 	 null
+sweetened 	 null
+name 	 double crunch shrimp
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 breast meat
+addon 	 null
+salt 	 null
+pack 	 null
+
+strawberries, raw
+category 	 strawberries
+milkfat 	 null
+sweetened 	 null
+name 	 snail
+brand 	 null
+technique 	 canned
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 null
+pack 	 null
+
+subway, cold cut sub on white bread with lettuce and tomato
+category 	 sausage mcmuffin with egg
+milkfat 	 null
+sweetened 	 null
+name 	 pancakes
+brand 	 lean pockets
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 null
+pack 	 null
+
+spices, curry powder
+category 	 spices
+milkfat 	 null
+sweetened 	 null
+name 	 double crunch shrimp
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 null
+pack 	 null
+
+soup, vegetarian vegetable, canned, prepared with equal volume water
+category 	 soup
+milkfat 	 null
+sweetened 	 null
+name 	 soup
+brand 	 null
+technique 	 canned
+caffeine 	 null
+fat 	 null
+flavor 	 oriental
+addon 	 null
+salt 	 null
+pack 	 null
+
+sour cream, reduced fat
+category 	 morningstar farms mushroom lover's burger
+milkfat 	 null
+sweetened 	 null
+name 	 chicken breast
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 null
+addon 	 null
+salt 	 null
+pack 	 null
+
+soursop, raw
+category 	 chick-n-strips
+milkfat 	 whole
+sweetened 	 null
+name 	 chocolate powder
+brand 	 null
+technique 	 bone removed
+caffeine 	 null
+fat 	 packaged (96% fat free, water added)
+flavor 	 leg (ham)
+addon 	 null
+salt 	 null
+pack 	 null
+
+snacks, rice cakes, brown rice, multigrain, unsalted
+category 	 snacks
+milkfat 	 null
+sweetened 	 null
+name 	 little caesars 14" original round pepperoni pizza
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 microwave
+addon 	 null
+salt 	 null
+pack 	 null
+
+sausage, turkey, fresh, cooked
+category 	 sausage
+milkfat 	 null
+sweetened 	 null
+name 	 sausage
+brand 	 null
+technique 	 null
+caffeine 	 null
+fat 	 null
+flavor 	 italian
+addon 	 null
+salt 	 null
+pack 	 null
