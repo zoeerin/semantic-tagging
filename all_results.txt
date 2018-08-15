@@ -1,0 +1,20 @@
+result of 4 RNN:precision=0.979664478668, recall=0.980730593607, f1_score=0.978431409261
+
+result of RNN with CRF result.rnn.crf.atis:precision=0.977722291207, recall=0.979452054795, f1_score=0.97681996363
+
+result of 1 RNN:result.rnn.atis: precision=0.977224461614, recall=0.97899543379, f1_score=0.976288860581
+
+CNN atis.cnn.result: precision=0.958811965531, recall=0.958082191781, f1_score=0.954694314829
+
+CNN+CRF result.cnn.crf.atis: precision=0.962762754714, recall=0.961461187215, f1_score=0.958657198896
+
+result of 4 CNN: result.cnn.atic.ens_4:
+precision=0.972638782814, recall=0.974520547945, f1_score=0.970687201221
+
+result.rnn.movie:	precision=0.912468918979, recall=0.915903751114, f1_score=0.912699049533
+
+result.cnn.movie:	precision=0.882250424486, recall=0.868994571822, f1_score=0.874162439873
+
+rsult.rnn.restaurant:		(0.8717452876232646, 0.873807519640853, 0.8717252157499974, None)
+
+result.cnn.restaurant:		(0.8152673589209876, 0.834576235438799, 0.8213256789098493, None)
